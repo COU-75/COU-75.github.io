@@ -1,17 +1,94 @@
-<div style="max-width:600px;margin:auto;">
-  <h3>Lista de reproducción</h3>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Mi Lista de Reproducción</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #f4f4f4;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    ul {
+      list-style-type: none;
+      padding: 0;
+    }
+    li {
+      margin: 8px 0;
+      cursor: pointer;
+    }
+    li:hover {
+      color: blue;
+    }
+    .controls {
+      margin: 15px 0;
+    }
+    button {
+      margin: 5px;
+      padding: 8px 12px;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <h2>🎵 Musical COU 75</h2>
+  <audio id="audioPlayer" controls></audio>
 
-  <p><strong>Audio 1 - Título del audio</strong></p>
-  <audio controls style="width:100%;">
-    <source src="https://cou-75.github.io/Peligro.mp3" type="audio/mpeg">
-    Tu navegador no soporta audio HTML5.
-  </audio>
+  <div class="controls">
+    <button id="prevBtn">⏮ Anterior</button>
+    <button id="nextBtn">Siguiente ⏭</button>
+  </div>
 
-  <p><strong>Audio 2 - Título del audio</strong></p>
-  <audio controls style="width:100%;">
-    <source src="https://docs.google.com/uc?export=download&id=11ylKOifnUXP4m6-dh44-qkpbTN2mQPmo" type="audio/mpeg">
-    Tu navegador no soporta audio HTML5.
-  </audio>
+  <ul id="playlist">
+    <li data-src="https://cou-75.github.io/Peligro.mp3">Canción 1 - Tomás Barroso</li>
+    <li data-src="canciones/cancion2.mp3">Canción 2</li>
+    <li data-src="canciones/cancion3.mp3">Canción 3</li>
+  </ul>
 
-  <!-- Repite para más audios -->
-</div>
+  <script>
+    const player = document.getElementById('audioPlayer');
+    const playlist = document.querySelectorAll('#playlist li');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    let current = 0;
+
+    function playSong(index) {
+      if (index >= 0 && index < playlist.length) {
+        current = index;
+        const src = playlist[index].getAttribute('data-src');
+        player.src = src;
+        player.play();
+        highlightCurrent();
+      }
+    }
+
+    function highlightCurrent() {
+      playlist.forEach((item, i) => {
+        item.style.fontWeight = (i === current) ? 'bold' : 'normal';
+      });
+    }
+
+    playlist.forEach((item, index) => {
+      item.addEventListener('click', () => {
+        playSong(index);
+      });
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (current > 0) playSong(current - 1);
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (current < playlist.length - 1) playSong(current + 1);
+    });
+
+    // Auto avanzar a la siguiente canción
+    player.addEventListener('ended', () => {
+      if (current < playlist.length - 1) playSong(current + 1);
+    });
+  </script>
+</body>
+</html>
