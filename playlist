@@ -1,0 +1,17 @@
+<div style="max-width:600px;margin:auto;">
+  <h3>Lista de reproducción</h3>
+
+  <p><strong>Audio 1 - Título del audio</strong></p>
+  <audio controls style="width:100%;">
+    <source src="https://docs.google.com/uc?export=download&id=ID_DEL_AUDIO_1" type="audio/mpeg">
+    Tu navegador no soporta audio HTML5.
+  </audio>
+
+  <p><strong>Audio 2 - Título del audio</strong></p>
+  <audio controls style="width:100%;">
+    <source src="https://docs.google.com/uc?export=download&id=ID_DEL_AUDIO_2" type="audio/mpeg">
+    Tu navegador no soporta audio HTML5.
+  </audio>
+
+  <!-- Repite para más audios -->
+</div>
