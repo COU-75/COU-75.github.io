@@ -7,27 +7,29 @@
 <style>
 body { font-family: Arial, sans-serif; background: #f0f4f8; padding: 20px; text-align: center; }
 h2 { color: #333; margin-bottom: 10px; }
-.table-container { max-width: 1000px; margin: 20px auto; overflow: auto; background: #fff; box-shadow: 0 6px 20px rgba(0,0,0,0.1); border-radius: 12px; padding: 15px; }
+.table-container { max-width: 1100px; margin: 20px auto; overflow: auto; background: #fff; box-shadow: 0 6px 20px rgba(0,0,0,0.1); border-radius: 12px; padding: 15px; }
 table { border-collapse: collapse; width: 100%; }
 th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
 th { background: #e2e2e2; font-weight: bold; position: sticky; top: 0; z-index: 2; }
-.totales { font-weight: bold; background: #d0ebff; position: sticky; top: 40px; z-index: 1; }
+.totales { font-weight: bold; background: #d0ebff; }
 tr:nth-child(even) td { background: #f9f9f9; }
 .si { background-color: #d4edda; transition: background 0.3s; }
 .no { background-color: #f8d7da; transition: background 0.3s; }
 input[type="text"] { width: 100%; box-sizing: border-box; padding: 4px; border-radius: 4px; border: 1px solid #ccc; }
 select { width: 70px; padding: 2px; border-radius: 4px; }
 .button-group { margin: 15px 0; }
-button { margin: 0 10px; padding: 6px 12px; cursor: pointer; border-radius: 6px; border: none; background: #007bff; color: white; font-weight: bold; transition: background 0.3s; }
+button { margin: 2px; padding: 6px 10px; cursor: pointer; border-radius: 6px; border: none; background: #007bff; color: white; font-weight: bold; transition: background 0.3s; }
 button:hover { background: #0056b3; }
+button.delete-btn { background: #dc3545; }
+button.delete-btn:hover { background: #a71d2a; }
 .progress-bar { height: 18px; border-radius: 10px; background: #e2e2e2; overflow: hidden; margin-top: 4px; }
 .progress-fill { height: 100%; width: 0%; background: #4caf50; text-align: center; color: white; font-size: 12px; line-height: 18px; transition: width 0.5s, background 0.5s; }
 .hidden { display: none; }
 </style>
 </head>
 <body>
-<h2>Colegio San Antonio de Padua. Cáceres</h<br>
-<h2>COU 1975 - 50 Aniversario</h<br>
+<h2>Colegio San Antonio de Padua. Cáceres</h2>
+<h2>COU 1975 - 50 Aniversario</h2>
 <h2>Confirmación de asistencia y fechas</h2>
 
 <div class="button-group hidden" id="buttons">
@@ -39,7 +41,9 @@ button:hover { background: #0056b3; }
   <input type="password" id="clave" placeholder="Ingrese la clave para desbloquear" onkeypress="if(event.key==='Enter'){unlockButtons();}">
   <button onclick="unlockButtons()">🔓 Desbloquear</button>
 </div>
-
+<small>(Este botón es para evitar problemas de configuración y para poder realizar copias de seguridad)</small><br><br>
+<small>Selecciona en Asistencia "Sí/No". En caso afirmativo, selecciona todas las fechas en las que estés disponible</small><br>
+<small>(En caso de duda deja todo en blanco. En cualquier momento puedes añadir, cambiar o quitar lo seleccionado)</small>
 <div class="table-container">
 <table id="asistenciaTable">
   <thead>
@@ -51,9 +55,8 @@ button:hover { background: #0056b3; }
       <th>Fecha 2</th>
       <th>Fecha 3</th>
       <th>Fecha 4</th>
+      <th>Acciones</th>
     </tr>
-  </thead>
-  <tbody id="tableBody">
     <tr class="totales">
       <td>—</td>
       <td>Totales</td>
@@ -62,18 +65,46 @@ button:hover { background: #0056b3; }
       <td><div class="progress-bar"><div class="progress-fill" id="totalFecha2">0%</div></div></td>
       <td><div class="progress-bar"><div class="progress-fill" id="totalFecha3">0%</div></div></td>
       <td><div class="progress-bar"><div class="progress-fill" id="totalFecha4">0%</div></div></td>
+      <td>—</td>
     </tr>
-  </tbody>
+  </thead>
+  <tbody id="tableBody"></tbody>
 </table>
 </div>
 
 <script>
 const CLAVE = "1234";
 
+const participantesIniciales = [
+  "Luisa Fernanda Alía Sánchez","Catalina Amador Campos","Tomás Barroso Gracia",
+  "Fátima Barroso Gutiérrez","Pilar Barroso Gutiérrez","Inés María Bravo Mogollón",
+  "Alfonso Callejo Carbajo","Gonzalo Callejo Carbajo","Fidela Calvarro Acosta",
+  "Gabriel Candela Maeztu","María Ángeles Carrasco Mayoral","Francisco José Corrales Corrales",
+  "María Luisa Crespo Candela","Antonio De Manuel Carrasco","Enrique Fernández Cañadas",
+  "Carmen Fernández Sánchez","Manuel Floriano Cortés","Mercedes Floriano Fernández",
+  "Santos Floriano Fernández","Antonio Galea Martín","Magdalena García Gutiérrez",
+  "Marta García Martínez","Soledad García Martínez","Carlos García Villalón",
+  "Juan Manuel García-Agúndez","Elvira Gómez Martín","Sebastián Gómez Rivera",
+  "Germán González Floriano","Pilar Guerrero Cantón","Francisco José Hernández Mogollón",
+  "Herminia Hernández Pelayo","Jesús Hernández Terrón","Plácida Jiménez Villa",
+  "Francisco León Duque","José Lucio Campos","Candelas Luengo García","José Luis Madrigal López",
+  "Magdalena Márquez Fragoso","Pelayo Mellado Jiménez","Joaquín Municio Durán",
+  "Eufemia Muñoz Carrasco","Purificación Muriel González","Purificación Muriel Rincón",
+  "Jesús Nevado Carrero","Pilar Ortega Sánchez","Elías Palomares Carrón","Santiago Paniagua Sandín",
+  "José Alfonso Pañero San Juan","María Teresa Paradés Regodón","Jesús Peloche Ortega",
+  "María Victoria Pérez Aloe Mejías","Arturo Pérez Hernández","María Isabel Pérez Hernández",
+  "Socorro Plaza Mateos","María José Polo Macías","Mercedes Preciado Lebrón",
+  "Soledad Pulido Iglesias","Santiago Ramos Pascual","Juan Ramos Salado","Rosa Rodríguez Corrales",
+  "Juan Carlos Román García","Inés María Sáez Rey","Basilio Sánchez González",
+  "Carlos Sánchez Solana","Juan José Santos Palomo","José Luis Silos Muñoz",
+  "Luis Tobajas Pizarro","Martín Valverde Merino","Emiliano Vivas Jiménez"
+];
+
 function unlockButtons(){
   const input = document.getElementById("clave");
   if(input.value === CLAVE){
     document.getElementById("buttons").classList.remove("hidden");
+    document.querySelectorAll(".delete-btn").forEach(btn => btn.classList.remove("hidden"));
     alert("✅ Botones desbloqueados");
     input.value = "";
   } else {
@@ -87,7 +118,7 @@ function updateTotals() {
   let totalAsistentes = 0;
   let totalFechas = [0,0,0,0];
 
-  for (let i = 1; i < rows.length; i++) {
+  for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
     const select = row.cells[2].querySelector("select");
     const checkboxes = Array.from(row.querySelectorAll('input[type="checkbox"]'));
@@ -95,23 +126,23 @@ function updateTotals() {
 
     row.style.opacity = nombreInput.value.trim() ? 1 : 0.6;
 
-    if (select.value === "sí") {
-      checkboxes.forEach(cb => cb.disabled = false);
-      row.classList.add('si'); row.classList.remove('no');
-    } else if (select.value === "no") {
-      checkboxes.forEach(cb => { cb.checked = false; cb.disabled = true; });
-      row.classList.add('no'); row.classList.remove('si');
-    } else {
-      checkboxes.forEach(cb => { cb.checked = false; cb.disabled = true; });
-      row.classList.remove('si'); row.classList.remove('no');
-    }
+    if (select.value === "Sí") {
+  checkboxes.forEach(cb => cb.disabled = false);
+  row.classList.add('si'); row.classList.remove('no');
+} else if (select.value === "No") {
+  checkboxes.forEach(cb => { cb.checked = false; cb.disabled = true; });
+  row.classList.add('no'); row.classList.remove('si');
+} else {
+  checkboxes.forEach(cb => { cb.checked = false; cb.disabled = true; });
+  row.classList.remove('si'); row.classList.remove('no');
+}
 
-    if (select.value === "sí") {
-      totalAsistentes++;
-      checkboxes.forEach((cb, idx) => { if(cb.checked) totalFechas[idx]++; });
-    }
+if (select.value === "Sí") {
+  totalAsistentes++;
+  checkboxes.forEach((cb, idx) => { if(cb.checked) totalFechas[idx]++; });
+}
 
-    row.cells[0].textContent = i;
+    row.cells[0].textContent = i+1;
   }
 
   document.getElementById("totalAsistentes").textContent = totalAsistentes;
@@ -126,7 +157,7 @@ function updateTotals() {
     else fill.style.background = "#4caf50";
   }
 
-  saveData(); // guardar cada vez que se actualiza
+  saveData(); 
 }
 
 function addRow(name="", asistencia="", fechas=[false,false,false,false]) {
@@ -138,15 +169,22 @@ function addRow(name="", asistencia="", fechas=[false,false,false,false]) {
     <td>
       <select onchange="updateTotals(this)">
         <option value="">--</option>
-        <option value="sí" ${asistencia==='sí'?'selected':''}>sí</option>
-        <option value="no" ${asistencia==='no'?'selected':''}>no</option>
+        <option value="Sí" ${asistencia==='Sí'?'selected':''}>Sí</option>
+        <option value="No" ${asistencia==='No'?'selected':''}>No</option>
       </select>
     </td>
     <td><input type="checkbox" ${fechas[0]?'checked':''} disabled onchange="updateTotals()"></td>
     <td><input type="checkbox" ${fechas[1]?'checked':''} disabled onchange="updateTotals()"></td>
     <td><input type="checkbox" ${fechas[2]?'checked':''} disabled onchange="updateTotals()"></td>
     <td><input type="checkbox" ${fechas[3]?'checked':''} disabled onchange="updateTotals()"></td>
+    <td><button class="delete-btn hidden" onclick="deleteRow(this)">🗑️</button></td>
   `;
+  updateTotals();
+}
+
+function deleteRow(btn) {
+  const row = btn.closest("tr");
+  row.remove();
   updateTotals();
 }
 
@@ -160,9 +198,11 @@ function exportCSV() {
       if(col.querySelector("input[type='text']")){
         rowData.push('"' + col.querySelector("input[type='text']").value + '"');
       } else if(col.querySelector("select")){
+        // Guardar la asistencia exactamente como aparece en el select
         rowData.push(col.querySelector("select").value);
       } else if(col.querySelector("input[type='checkbox']")){
-        rowData.push(col.querySelector("input[type='checkbox']").checked ? "sí" : "no");
+        // Guardar Sí / No en mayúscula
+        rowData.push(col.querySelector("input[type='checkbox']").checked ? "Sí" : "No");
       } else {
         rowData.push(col.textContent.trim());
       }
@@ -182,7 +222,7 @@ function exportCSV() {
 
 function saveData() {
   const tbody = document.getElementById("tableBody");
-  const rows = Array.from(tbody.rows).slice(1); // sin fila totales
+  const rows = Array.from(tbody.rows);
   const data = rows.map(row => {
     const nombre = row.cells[1].querySelector("input").value;
     const asistencia = row.cells[2].querySelector("select").value;
@@ -193,8 +233,13 @@ function saveData() {
 }
 
 function loadData() {
-  const data = JSON.parse(localStorage.getItem("asistenciaData") || "[]");
-  data.forEach(d => addRow(d.nombre,d.asistencia,d.fechas));
+  const saved = JSON.parse(localStorage.getItem("asistenciaData") || "[]");
+
+  if (saved.length > 0) {
+    saved.forEach(d => addRow(d.nombre,d.asistencia,d.fechas));
+  } else {
+    participantesIniciales.forEach(nombre => addRow(nombre, "", [false,false,false,false]));
+  }
 }
 
 window.onload = function(){
