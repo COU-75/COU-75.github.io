@@ -195,12 +195,23 @@ function cargarParticipantes(){
 function exportarCSV() {
   const rows = document.querySelectorAll("#asistenciaTable tr");
   let csv = [];
+
   rows.forEach(row => {
     const cols = row.querySelectorAll("td, th");
     let rowData = [];
-    cols.forEach(col => rowData.push(`"${col.innerText.replace(/\n/g," ").trim()}"`));
+
+    cols.forEach((col, idx) => {
+      if(idx === 2 && col.querySelector("select")) {
+        // Obtener el valor seleccionado del select de Asistencia
+        rowData.push(`"${col.querySelector("select").value}"`);
+      } else {
+        rowData.push(`"${col.innerText.replace(/\n/g," ").trim()}"`);
+      }
+    });
+
     csv.push(rowData.join(","));
   });
+
   const blob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
@@ -212,3 +223,4 @@ cargarParticipantes();
 </script>
 </body>
 </html>
+
