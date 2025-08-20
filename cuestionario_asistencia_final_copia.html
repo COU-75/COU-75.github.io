@@ -74,7 +74,7 @@ button:hover { background: #0056b3; }
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Configuración Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyCqO0T91wWElxB7E9JseQuhJG7_g0KEklk",
   authDomain: "asistencia-cou1975.firebaseapp.com",
@@ -88,145 +88,14 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 // ===== Variables y Funciones =====
-
-// Lista de participantes predefinidos
-const participantesLista = [
-  "Luisa Fernanda Alía Sánchez",
-  "Catalina Amador Campos",
-  "Tomás Barroso Gracia",
-  "Fátima Barroso Gutiérrez",
-  "Pilar Barroso Gutiérrez",
-  "Inés María Bravo Mogollón",
-  "Alfonso Callejo Carbajo",
-  "Gonzalo Callejo Carbajo",
-  "Fidela Calvarro Acosta",
-  "Gabriel Candela Maeztu",
-  "María Ángeles Carrasco Mayoral",
-  "Francisco José Corrales Corrales",
-  "María Luisa Crespo Candela",
-  "Antonio  De Manuel Carrasco",
-  "Enrique Fernández Cañadas",
-  "Carmen Fernández Sánchez",
-  "Manuel Floriano Cortés",
-  "Mercedes Floriano Fernández",
-  "Santos Floriano Fernández",
-  "Antonio  Galea Martín",
-  "Magdalena García Gutiérrez",
-  "Marta  García Martínez",
-  "Soledad García Martínez",
-  "Carlos García Villalón",
-  "Juan Manuel  García-Agúndez",
-  "Elvira  Gómez Martín",
-  "Sebastián Gómez Rivera",
-  "Germán González Floriano",
-  "Pilar Guerrero Cantón",
-  "Francisco José Hernández Mogollón",
-  "Herminia Hernández Pelayo",
-  "Jesús Hernández Terrón",
-  "Plácida Jiménez Villa",
-  "Francisco León Duque",
-  "José Lucio Campos",
-  "Candelas  Luengo García",
-  "José Luis  Madrigal López",
-  "Magdalena Márquez Fragoso",
-  "Pelayo Mellado Jiménez",
-  "Joaquín Municio Durán",
-  "Eufemia Muñoz Carrasco",
-  "Purificación Muriel González",
-  "Purificación Muriel Rincón",
-  "Jesús Nevado Carrero",
-  "Pilar Ortega Sánchez",
-  "Elías Palomares Carrón",
-  "Santiago Paniagua Sandín",
-  "José Alfonso Pañero San Juan",
-  "María Teresa  Paradés Regodón",
-  "Jesús Peloche Ortega",
-  "María Victoria Pérez Aloe Mejías",
-  "Arturo Pérez Hernández",
-  "María Isabel Pérez Hernández",
-  "Socorro  Plaza Mateos",
-  "María José Polo Macías",
-  "Mercedes Preciado Lebrón",
-  "Soledad Pulido Iglesias",
-  "Santiago  Ramos Pascual",
-  "Juan Ramos Salado",
-  "Rosa Rodríguez Corrales",
-  "Juan Carlos Román García",
-  "Inés María Sáez Rey",
-  "Basilio Sánchez González",
-  "Carlos  Sánchez Solana",
-  "Juan José Santos Palomo",
-  "José Luis  Silos Muñoz",
-  "Luis Tobajas Pizarro",
-  "Martín Valverde Merino",
-  "Emiliano Vivas Jiménez"
-];
-
-// Función para cargar participantes al iniciar
-async function cargarParticipantes() {
-  const snapshot = await db.collection("participantes").get();
-  const existentes = snapshot.docs.map(doc => doc.data().nombre);
-
-  participantesLista.forEach(nombre => {
-    if(!existentes.includes(nombre)) {
-      addRow(nombre); // crea y guarda automáticamente en Firestore
-    }
-  });
-}
-
-// Llamar al cargar la página
-window.addEventListener("load", cargarParticipantes);
-
-// Función para agregar todos los participantes de la lista
-function addAllParticipants() {
-  participantesLista.forEach(nombre => addRow(nombre));
-  updateTotals();
-}
-// Función para agregar un participante con ID único en Firestore
-function addRow(nombre="", asistencia="", fechas=[false,false,false,false], id=null){
-  const tbody = document.getElementById("tableBody");
-  const newRow = tbody.insertRow();
-  
-  // Si no hay ID, generamos uno único de Firestore
-  const rowId = id || db.collection("participantes").doc().id;
-  newRow.dataset.id = rowId;
-
-  newRow.innerHTML = `
-    <td>0</td>
-    <td><input type="text" value="${nombre}" oninput="guardarFila(this)"></td>
-    <td>
-      <select onchange="guardarFila(this)">
-        <option value="">--</option>
-        <option value="Sí" ${asistencia==='Sí'?'selected':''}>Sí</option>
-        <option value="No" ${asistencia==='No'?'selected':''}>No</option>
-      </select>
-    </td>
-    <td><input type="checkbox" ${fechas[0]?'checked':''} disabled onchange="guardarFila(this)"></td>
-    <td><input type="checkbox" ${fechas[1]?'checked':''} disabled onchange="guardarFila(this)"></td>
-    <td><input type="checkbox" ${fechas[2]?'checked':''} disabled onchange="guardarFila(this)"></td>
-    <td><input type="checkbox" ${fechas[3]?'checked':''} disabled onchange="guardarFila(this)"></td>
-    <td><button onclick="borrarFila(this)">🗑️</button></td>
-  `;
-  
-  // Guardar automáticamente en Firestore con ID único
-  if(nombre.trim()) {
-    db.collection("participantes").doc(rowId).set({
-      nombre, asistencia, fechas
-    }).then(()=> updateTotals())
-      .catch(err=> console.error(err));
-  }
-
-  updateTotals();
-}
 const CLAVE = "1234";
-// Modificar unlockButtons para agregar participantes con ID único
+
 function unlockButtons(){
   const input = document.getElementById("clave");
   if(input.value === CLAVE){
     document.getElementById("buttons").classList.remove("hidden");
-    alert("✅ Botones desbloqueados. Se cargarán los participantes predefinidos.");
+    alert("✅ Botones desbloqueados");
     input.value = "";
-    participantesLista.forEach(nombre => addRow(nombre));
   } else {
     alert("❌ Clave incorrecta");
   }
@@ -296,50 +165,93 @@ function addRow(nombre="", asistencia="", fechas=[false,false,false,false], id=n
     <td><input type="checkbox" ${fechas[3]?'checked':''} disabled onchange="guardarFila(this)"></td>
     <td><button onclick="borrarFila(this)">🗑️</button></td>
   `;
-  newRow.dataset.id = id || ""; // guardar id de Firestore
+  newRow.dataset.id = id || ""; 
+  guardarFila(newRow.cells[1].querySelector("input")); // guardar al crear
   updateTotals();
 }
 
 // Guardar cambios de una fila en Firebase
 function guardarFila(el){
   const row = el.closest("tr");
-  const nombre = row.cells[1].querySelector("input").value;
-  if(!nombre.trim()) return;
-
-  const asistencia = row.cells[2].querySelector("select").value;
-  const fechas = Array.from(row.querySelectorAll('input[type="checkbox"]')).map(cb=>cb.checked);
-
-  // Guardar en Firestore
-  const id = row.dataset.id || nombre; // si no hay id, usar nombre
+  const id = row.dataset.id || db.collection("participantes").doc().id;
   row.dataset.id = id;
+
+  const nombre = row.cells[1].querySelector("input").value.trim();
+  const asistencia = row.cells[2].querySelector("select").value;
+  const fechas = Array.from(row.querySelectorAll('input[type="checkbox"]')).map(cb => cb.checked);
+
   db.collection("participantes").doc(id).set({
     nombre, asistencia, fechas
-  }).then(()=> updateTotals())
-    .catch(err=> console.error(err));
+  });
+
+  updateTotals();
 }
 
-// Borrar fila y eliminar de Firebase
+// Borrar fila
 function borrarFila(btn){
   const row = btn.closest("tr");
   const id = row.dataset.id;
-  if(id) db.collection("participantes").doc(id).delete().catch(console.error);
+  if(id) db.collection("participantes").doc(id).delete();
   row.remove();
   updateTotals();
 }
 
-// Cargar datos desde Firebase en tiempo real
-db.collection("participantes").orderBy("nombre").onSnapshot(snapshot=>{
-  const tbody = document.getElementById("tableBody");
-  tbody.innerHTML = "";
-  snapshot.forEach(doc=>{
-    const data = doc.data();
-    addRow(data.nombre, data.asistencia, data.fechas, doc.id);
+// Exportar CSV
+function exportCSV(){
+  const rows = document.querySelectorAll("#tableBody tr");
+  let csv = "Nombre,Asistencia,Fecha1,Fecha2,Fecha3,Fecha4\n";
+  rows.forEach(r=>{
+    const nombre = r.cells[1].querySelector("input").value;
+    const asistencia = r.cells[2].querySelector("select").value;
+    const fechas = Array.from(r.querySelectorAll('input[type="checkbox"]')).map(cb => cb.checked?'Sí':'No');
+    csv += [nombre,asistencia,...fechas].join(",")+"\n";
   });
-});
+  const blob = new Blob([csv], {type: 'text/csv'});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "asistentes.csv";
+  a.click();
+}
+
+// ===== Cargar participantes al inicio =====
+const participantesLista = [
+  "Luisa Fernanda Alía Sánchez","Catalina Amador Campos","Tomás Barroso Gracia","Fátima Barroso Gutiérrez","Pilar Barroso Gutiérrez",
+  "Inés María Bravo Mogollón","Alfonso Callejo Carbajo","Gonzalo Callejo Carbajo","Fidela Calvarro Acosta","Gabriel Candela Maeztu",
+  "María Ángeles Carrasco Mayoral","Francisco José Corrales Corrales","María Luisa Crespo Candela","Antonio  De Manuel Carrasco","Enrique Fernández Cañadas",
+  "Carmen Fernández Sánchez","Manuel Floriano Cortés","Mercedes Floriano Fernández","Santos Floriano Fernández","Antonio  Galea Martín",
+  "Magdalena García Gutiérrez","Marta  García Martínez","Soledad García Martínez","Carlos García Villalón","Juan Manuel  García-Agúndez",
+  "Elvira  Gómez Martín","Sebastián Gómez Rivera","Germán González Floriano","Pilar Guerrero Cantón","Francisco José Hernández Mogollón",
+  "Herminia Hernández Pelayo","Jesús Hernández Terrón","Plácida Jiménez Villa","Francisco León Duque","José Lucio Campos",
+  "Candelas  Luengo García","José Luis  Madrigal López","Magdalena Márquez Fragoso","Pelayo Mellado Jiménez","Joaquín Municio Durán",
+  "Eufemia Muñoz Carrasco","Purificación Muriel González","Purificación Muriel Rincón","Jesús Nevado Carrero","Pilar Ortega Sánchez",
+  "Elías Palomares Carrón","Santiago Paniagua Sandín","José Alfonso Pañero San Juan","María Teresa  Paradés Regodón","Jesús Peloche Ortega",
+  "María Victoria Pérez Aloe Mejías","Arturo Pérez Hernández","María Isabel Pérez Hernández","Socorro  Plaza Mateos","María José Polo Macías",
+  "Mercedes Preciado Lebrón","Soledad Pulido Iglesias","Santiago  Ramos Pascual","Juan Ramos Salado","Rosa Rodríguez Corrales",
+  "Juan Carlos Román García","Inés María Sáez Rey","Basilio Sánchez González","Carlos  Sánchez Solana","Juan José Santos Palomo",
+  "José Luis  Silos Muñoz","Luis Tobajas Pizarro","Martín Valverde Merino","Emiliano Vivas Jiménez"
+];
+
+// Cargar desde Firestore y añadir los que faltan
+async function cargarParticipantes(){
+  const snapshot = await db.collection("participantes").get();
+  const existentes = snapshot.docs.map(doc=>({id:doc.id, ...doc.data()}));
+
+  // Cargar los existentes
+  existentes.forEach(p => addRow(p.nombre, p.asistencia, p.fechas, p.id));
+
+  // Agregar los que faltan
+  participantesLista.forEach(nombre => {
+    if(!existentes.some(p => p.nombre === nombre)){
+      addRow(nombre, "", [false,false,false,false]);
+    }
+  });
+}
+
+window.addEventListener("load", cargarParticipantes);
 
 </script>
 </body>
-
 </html>
+
 
 
