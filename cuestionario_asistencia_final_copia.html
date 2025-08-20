@@ -15,7 +15,6 @@ th { background: #e2e2e2; font-weight: bold; position: sticky; top: 0; z-index: 
 tr:nth-child(even) td { background: #f9f9f9; }
 .si { background-color: #d4edda; transition: background 0.3s; }
 .no { background-color: #f8d7da; transition: background 0.3s; }
-input[type="text"] { width: 100%; box-sizing: border-box; padding: 4px; border-radius: 4px; border: 1px solid #ccc; }
 select { width: 70px; padding: 2px; border-radius: 4px; }
 .progress-bar { height: 18px; border-radius: 10px; background: #e2e2e2; overflow: hidden; margin-top: 4px; }
 .progress-fill { height: 100%; width: 0%; background: #4caf50; text-align: center; color: white; font-size: 12px; line-height: 18px; transition: width 0.5s, background 0.5s; }
@@ -61,37 +60,35 @@ select { width: 70px; padding: 2px; border-radius: 4px; }
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
-// Firebase configuration (solo con projectId para no exponer claves)
-const firebaseConfig = {
-  projectId: "asistencia-cou1975"
-};
+// Firebase config
+const firebaseConfig = { projectId: "asistencia-cou1975" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Lista de participantes (orden original que se quiere respetar)
+// Lista de participantes
 const participantes = [
-"Luisa Fernanda Alía Sánchez","Catalina Amador Campos","Tomás Barroso Gracia","Fátima Barroso Gutiérrez",
-"Pilar Barroso Gutiérrez","Inés María Bravo Mogollón","Alfonso Callejo Carbajo","Gonzalo Callejo Carbajo",
-"Fidela Calvarro Acosta","Gabriel Candela Maeztu","María Ángeles Carrasco Mayoral","Francisco José Corrales Corrales",
-"María Luisa Crespo Candela","Antonio  De Manuel Carrasco","Enrique Fernández Cañadas","Carmen Fernández Sánchez",
-"Manuel Floriano Cortés","Mercedes Floriano Fernández","Santos Floriano Fernández","Antonio  Galea Martín",
-"Magdalena García Gutiérrez","Marta  García Martínez","Soledad García Martínez","Carlos García Villalón",
-"Juan Manuel  García-Agúndez","Elvira  Gómez Martín","Sebastián Gómez Rivera","Germán González Floriano",
-"Pilar Guerrero Cantón","Francisco José Hernández Mogollón","Herminia Hernández Pelayo","Jesús Hernández Terrón",
-"Plácida Jiménez Villa","Francisco León Duque","José Lucio Campos","Candelas  Luengo García","José Luis  Madrigal López",
-"Magdalena Márquez Fragoso","Pelayo Mellado Jiménez","Joaquín Municio Durán","Eufemia Muñoz Carrasco",
-"Purificación Muriel González","Purificación Muriel Rincón","Jesús Nevado Carrero","Pilar Ortega Sánchez",
-"Elías Palomares Carrón","Santiago Paniagua Sandín","José Alfonso Pañero San Juan","María Teresa  Paradés Regodón",
-"Jesús Peloche Ortega","María Victoria Pérez Aloe Mejías","Arturo Pérez Hernández","María Isabel Pérez Hernández",
-"Socorro  Plaza Mateos","María José Polo Macías","Mercedes Preciado Lebrón","Soledad Pulido Iglesias",
-"Santiago  Ramos Pascual","Juan Ramos Salado","Rosa Rodríguez Corrales","Juan Carlos Román García",
-"Inés María Sáez Rey","Basilio Sánchez González","Carlos  Sánchez Solana","Juan José Santos Palomo",
-"José Luis  Silos Muñoz","Luis Tobajas Pizarro","Martín Valverde Merino","Emiliano Vivas Jiménez"
+  "Luisa Fernanda Alía Sánchez","Catalina Amador Campos","Tomás Barroso Gracia","Fátima Barroso Gutiérrez",
+  "Pilar Barroso Gutiérrez","Inés María Bravo Mogollón","Alfonso Callejo Carbajo","Gonzalo Callejo Carbajo",
+  "Fidela Calvarro Acosta","Gabriel Candela Maeztu","María Ángeles Carrasco Mayoral","Francisco José Corrales Corrales",
+  "María Luisa Crespo Candela","Antonio  De Manuel Carrasco","Enrique Fernández Cañadas","Carmen Fernández Sánchez",
+  "Manuel Floriano Cortés","Mercedes Floriano Fernández","Santos Floriano Fernández","Antonio  Galea Martín",
+  "Magdalena García Gutiérrez","Marta  García Martínez","Soledad García Martínez","Carlos García Villalón",
+  "Juan Manuel  García-Agúndez","Elvira  Gómez Martín","Sebastián Gómez Rivera","Germán González Floriano",
+  "Pilar Guerrero Cantón","Francisco José Hernández Mogollón","Herminia Hernández Pelayo","Jesús Hernández Terrón",
+  "Plácida Jiménez Villa","Francisco León Duque","José Lucio Campos","Candelas  Luengo García","José Luis  Madrigal López",
+  "Magdalena Márquez Fragoso","Pelayo Mellado Jiménez","Joaquín Municio Durán","Eufemia Muñoz Carrasco",
+  "Purificación Muriel González","Purificación Muriel Rincón","Jesús Nevado Carrero","Pilar Ortega Sánchez",
+  "Elías Palomares Carrón","Santiago Paniagua Sandín","José Alfonso Pañero San Juan","María Teresa  Paradés Regodón",
+  "Jesús Peloche Ortega","María Victoria Pérez Aloe Mejías","Arturo Pérez Hernández","María Isabel Pérez Hernández",
+  "Socorro  Plaza Mateos","María José Polo Macías","Mercedes Preciado Lebrón","Soledad Pulido Iglesias",
+  "Santiago  Ramos Pascual","Juan Ramos Salado","Rosa Rodríguez Corrales","Juan Carlos Román García",
+  "Inés María Sáez Rey","Basilio Sánchez González","Carlos  Sánchez Solana","Juan José Santos Palomo",
+  "José Luis  Silos Muñoz","Luis Tobajas Pizarro","Martín Valverde Merino","Emiliano Vivas Jiménez"
 ];
 
 // ===== Funciones =====
 
-// Actualiza totales y colores de progreso
+// Actualiza totales
 function updateTotals() {
   const tbody = document.getElementById("tableBody");
   const rows = tbody.rows;
@@ -102,9 +99,6 @@ function updateTotals() {
     const row = rows[i];
     const select = row.cells[2].querySelector("select");
     const checkboxes = Array.from(row.querySelectorAll('input[type="checkbox"]'));
-    const nombreInput = row.cells[1].querySelector('input[type="text"]');
-
-    row.style.opacity = nombreInput.value.trim() ? 1 : 0.6;
 
     if (select.value === "Sí") {
       checkboxes.forEach(cb => cb.disabled = false);
@@ -141,7 +135,7 @@ function addRow(nombre="", asistencia="", fechas=[false,false,false,false], id=n
   const newRow = tbody.insertRow();
   newRow.innerHTML = `
     <td>0</td>
-    <td><input type="text" value="${nombre}" oninput="guardarFila(this)"></td>
+    <td><span>${nombre}</span></td>
     <td>
       <select onchange="guardarFila(this)">
         <option value="">--</option>
@@ -158,32 +152,26 @@ function addRow(nombre="", asistencia="", fechas=[false,false,false,false], id=n
   updateTotals();
 }
 
-// Guardar cambios de una fila en Firebase sin borrar otros datos
+// Guardar cambios
 function guardarFila(el){
   const row = el.closest("tr");
   const id = row.dataset.id || db.collection("participantes").doc().id;
   row.dataset.id = id;
 
-  const nombre = row.cells[1].querySelector("input").value.trim();
+  const nombre = row.cells[1].querySelector("span").textContent.trim();
   const asistencia = row.cells[2].querySelector("select").value;
   const fechas = Array.from(row.querySelectorAll('input[type="checkbox"]')).map(cb => cb.checked);
 
-  db.collection("participantes").doc(id).set({
-    nombre, asistencia, fechas
-  }, { merge: true });
-
+  db.collection("participantes").doc(id).set({ nombre, asistencia, fechas }, { merge: true });
   updateTotals();
 }
 
-// Carga inicial de participantes respetando el orden de la lista
+// Carga inicial
 async function cargarParticipantes(){
   const snapshot = await db.collection("participantes").get();
   const dataMap = {};
-  snapshot.docs.forEach(doc => {
-    dataMap[doc.data().nombre] = { ...doc.data(), id: doc.id };
-  });
+  snapshot.docs.forEach(doc => { dataMap[doc.data().nombre] = { ...doc.data(), id: doc.id }; });
 
-  // Recorremos la lista maestra en orden original
   participantes.forEach(nombre=>{
     if (dataMap[nombre]) {
       const d = dataMap[nombre];
@@ -195,13 +183,10 @@ async function cargarParticipantes(){
       }, { merge:true });
     }
   });
-
   updateTotals();
 }
 
-// Inicialización
 window.onload = () => cargarParticipantes();
 </script>
 </body>
 </html>
-
