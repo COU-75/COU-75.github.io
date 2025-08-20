@@ -152,7 +152,20 @@ function addRow(nombre="", asistencia="", fechas=[false,false,false,false], id=n
   newRow.dataset.id = id || nombre;
   updateTotals();
 }
-
+function mostrarAviso(mensaje) {
+  const aviso = document.createElement("div");
+  aviso.textContent = mensaje;
+  aviso.style.position = "fixed";
+  aviso.style.bottom = "20px";
+  aviso.style.right = "20px";
+  aviso.style.background = "#4caf50";
+  aviso.style.color = "white";
+  aviso.style.padding = "10px 15px";
+  aviso.style.borderRadius = "8px";
+  aviso.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
+  document.body.appendChild(aviso);
+  setTimeout(()=>aviso.remove(),2000);
+}
 // Guardar cambios
 function guardarFila(el){
   const row = el.closest("tr");
@@ -163,7 +176,8 @@ function guardarFila(el){
   const asistencia = row.cells[2].querySelector("select").value;
   const fechas = Array.from(row.querySelectorAll('input[type="checkbox"]')).map(cb => cb.checked);
 
-  db.collection("participantes").doc(id).set({ nombre, asistencia, fechas }, { merge: true });
+  db.collection("participantes").doc(id).set({ nombre, asistencia, fechas }, { merge: true })
+  .then(()=> mostrarAviso("Datos guardados ✅"));
   updateTotals();
 }
 
@@ -192,3 +206,4 @@ window.onload = () => cargarParticipantes();
 </body>
 
 </html>
+
