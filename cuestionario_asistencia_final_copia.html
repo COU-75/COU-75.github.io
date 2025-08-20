@@ -31,34 +31,28 @@ button:hover { background: #0056b3; }
 <h2>COU 1975 - 50 Aniversario</h2>
 <h2>Confirmación de asistencia y fechas</h2>
 
-<div class="button-group">
-  <button onclick="addRow()">➕ Agregar participante</button>
-</div>
-
 <div class="table-container">
 <table id="asistenciaTable">
   <thead>
-    <tr>
-      <th>#</th>
-      <th>Nombre</th>
-      <th>Asistencia</th>
-      <th>Fecha 1</th>
-      <th>Fecha 2</th>
-      <th>Fecha 3</th>
-      <th>Fecha 4</th>
-      <th>Acciones</th>
-    </tr>
-    <tr class="totales">
-      <td>—</td>
-      <td>Totales</td>
-      <td id="totalAsistentes">0</td>
-      <td><div class="progress-bar"><div class="progress-fill" id="totalFecha1">0%</div></div></td>
-      <td><div class="progress-bar"><div class="progress-fill" id="totalFecha2">0%</div></div></td>
-      <td><div class="progress-bar"><div class="progress-fill" id="totalFecha3">0%</div></div></td>
-      <td><div class="progress-bar"><div class="progress-fill" id="totalFecha4">0%</div></div></td>
-      <td>—</td>
-    </tr>
-  </thead>
+  <tr>
+    <th>#</th>
+    <th>Nombre</th>
+    <th>Asistencia</th>
+    <th>Fecha 1</th>
+    <th>Fecha 2</th>
+    <th>Fecha 3</th>
+    <th>Fecha 4</th>
+  </tr>
+  <tr class="totales">
+    <td>—</td>
+    <td>Totales</td>
+    <td id="totalAsistentes">0</td>
+    <td><div class="progress-bar"><div class="progress-fill" id="totalFecha1">0%</div></div></td>
+    <td><div class="progress-bar"><div class="progress-fill" id="totalFecha2">0%</div></div></td>
+    <td><div class="progress-bar"><div class="progress-fill" id="totalFecha3">0%</div></div></td>
+    <td><div class="progress-bar"><div class="progress-fill" id="totalFecha4">0%</div></div></td>
+  </tr>
+</thead>
   <tbody id="tableBody"></tbody>
 </table>
 </div>
@@ -189,15 +183,6 @@ function guardarFila(el){
   updateTotals();
 }
 
-// Borrar fila y documento
-function borrarFila(btn){
-  const row = btn.closest("tr");
-  const id = row.dataset.id;
-  if (id) db.collection("participantes").doc(id).delete();
-  row.remove();
-  updateTotals();
-}
-
 // Carga inicial de participantes
 function cargarParticipantes(){
   db.collection("participantes").get().then(snapshot=>{
@@ -225,6 +210,7 @@ window.onload = () => cargarParticipantes();
 </script>
 </body>
 </html>
+
 
 
 
