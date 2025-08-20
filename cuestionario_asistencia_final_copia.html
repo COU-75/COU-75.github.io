@@ -88,7 +88,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
 // ===== Variables y Funciones =====
-const CLAVE = "1234";
+
 const participantesLista = [
   "Luisa Fernanda Alía Sánchez",
   "Catalina Amador Campos",
@@ -202,7 +202,7 @@ function addRow(nombre="", asistencia="", fechas=[false,false,false,false], id=n
 
   updateTotals();
 }
-
+const CLAVE = "1234";
 // Modificar unlockButtons para agregar participantes con ID único
 function unlockButtons(){
   const input = document.getElementById("clave");
@@ -325,3 +325,4 @@ db.collection("participantes").orderBy("nombre").onSnapshot(snapshot=>{
 </body>
 
 </html>
+
