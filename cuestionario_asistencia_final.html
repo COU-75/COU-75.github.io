@@ -19,6 +19,8 @@ select { width: 70px; padding: 2px; border-radius: 4px; }
 .progress-bar { height: 18px; border-radius: 10px; background: #e2e2e2; overflow: hidden; margin-top: 4px; }
 .progress-fill { height: 100%; width: 0%; background: #4caf50; text-align: center; color: white; font-size: 12px; line-height: 18px; transition: width 0.5s, background 0.5s; }
 .hidden { display: none; }
+button { margin-top: 15px; padding: 8px 16px; border:none; background:#4caf50; color:white; border-radius:6px; cursor:pointer; }
+button:hover { background:#45a049; }
 </style>
 </head>
 <body>
@@ -28,8 +30,8 @@ select { width: 70px; padding: 2px; border-radius: 4px; }
 <h2>Confirmación de asistencia y fechas</h2>
 <br>
 <small>Selecciona en Asistencia "Sí/No" y, en caso afirmativo, las fechas en las que estarías disponible</small><br>
-  <small>(Si tienes dudas, no te preocupes. Los datos se pueden cambiar, añadir o quitar en cualquier momento)</small><br>
-  <small>(¡Ojo con los despistes! ¡Cuidado con no cambiar los datos de los demás!)</small>
+<small>(Si tienes dudas, no te preocupes. Los datos se pueden cambiar, añadir o quitar en cualquier momento)</small><br>
+<small>(¡Ojo con los despistes! ¡Cuidado con no cambiar los datos de los demás!)</small>
 <div class="table-container">
 <table id="asistenciaTable">
   <thead>
@@ -55,9 +57,9 @@ select { width: 70px; padding: 2px; border-radius: 4px; }
   <tbody id="tableBody"></tbody>
 </table>
 </div>
-<button onclick="exportarCSV()" style="margin-top:15px; padding:8px 16px; border:none; background:#4caf50; color:white; border-radius:6px; cursor:pointer;">
-  📥 Exportar CSV
-</button>
+
+<button onclick="exportarCSV()">📥 Exportar CSV</button>
+
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -91,7 +93,6 @@ const participantes = [
 
 // ===== Funciones =====
 
-// Actualiza totales
 function updateTotals() {
   const tbody = document.getElementById("tableBody");
   const rows = tbody.rows;
@@ -132,7 +133,6 @@ function updateTotals() {
   }
 }
 
-// Añade un participante
 function addRow(nombre="", asistencia="", fechas=[false,false,false,false], id=null){
   const tbody = document.getElementById("tableBody");
   const newRow = tbody.insertRow();
@@ -154,21 +154,7 @@ function addRow(nombre="", asistencia="", fechas=[false,false,false,false], id=n
   newRow.dataset.id = id || nombre;
   updateTotals();
 }
-function mostrarAviso(mensaje) {
-  const aviso = document.createElement("div");
-  aviso.textContent = mensaje;
-  aviso.style.position = "fixed";
-  aviso.style.bottom = "20px";
-  aviso.style.right = "20px";
-  aviso.style.background = "#4caf50";
-  aviso.style.color = "white";
-  aviso.style.padding = "10px 15px";
-  aviso.style.borderRadius = "8px";
-  aviso.style.boxShadow = "0 4px 10px rgba(0,0,0,0.2)";
-  document.body.appendChild(aviso);
-  setTimeout(()=>aviso.remove(),2000);
-}
-// Guardar cambios
+
 function guardarFila(el){
   const row = el.closest("tr");
   const id = row.dataset.id || db.collection("participantes").doc().id;
@@ -178,12 +164,11 @@ function guardarFila(el){
   const asistencia = row.cells[2].querySelector("select").value;
   const fechas = Array.from(row.querySelectorAll('input[type="checkbox"]')).map(cb => cb.checked);
 
-  db.collection("participantes").doc(id).set({ nombre, asistencia, fechas }, { merge: true })
-  .then(()=> mostrarAviso("Datos guardados ✅"));
+  db.collection("participantes").doc(id).set({ nombre, asistencia, fechas }, { merge: true });
   updateTotals();
 }
 
-// Carga inicial
+// Cargar participantes en tiempo real
 function cargarParticipantes(){
   db.collection("participantes").onSnapshot(snapshot => {
     const dataMap = {};
@@ -191,52 +176,39 @@ function cargarParticipantes(){
       dataMap[doc.data().nombre] = { ...doc.data(), id: doc.id }; 
     });
 
-    // Vaciar la tabla antes de volver a pintar
     const tbody = document.getElementById("tableBody");
     tbody.innerHTML = "";
 
-    // Volver a generar filas actualizadas
     participantes.forEach(nombre=>{
-      if (dataMap[nombre]) {
-        const d = dataMap[nombre];
-        addRow(d.nombre, d.asistencia, d.fechas, d.id);
+      if(dataMap[nombre]){
+        addRow(nombre, dataMap[nombre].asistencia, dataMap[nombre].fechas, dataMap[nombre].id);
       } else {
-        addRow(nombre,"",[false,false,false,false], nombre);
-        db.collection("participantes").doc(nombre).set({
-          nombre, asistencia:"", fechas:[false,false,false,false]
-        }, { merge:true });
+        addRow(nombre);
       }
     });
 
     updateTotals();
   });
 }
+
+// Exportar CSV
 function exportarCSV() {
   const rows = document.querySelectorAll("#asistenciaTable tr");
   let csv = [];
-
   rows.forEach(row => {
-    let cols = row.querySelectorAll("td, th");
+    const cols = row.querySelectorAll("td, th");
     let rowData = [];
-    cols.forEach((col, i) => {
-      let text = col.innerText.replace(/\n/g, " ").trim();
-      rowData.push(`"${text}"`);
-    });
+    cols.forEach(col => rowData.push(`"${col.innerText.replace(/\n/g," ").trim()}"`));
     csv.push(rowData.join(","));
   });
-
-  // Crear archivo descargable
   const blob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8;" });
   const link = document.createElement("a");
   link.href = URL.createObjectURL(blob);
   link.download = "asistencia_cou1975.csv";
   link.click();
 }
-window.onload = () => cargarParticipantes();
+
+cargarParticipantes();
 </script>
 </body>
-
 </html>
-
-
-
