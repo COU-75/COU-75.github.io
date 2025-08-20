@@ -89,13 +89,128 @@ const db = firebase.firestore();
 
 // ===== Variables y Funciones =====
 const CLAVE = "1234";
+const participantesLista = [
+  "Luisa Fernanda Alía Sánchez",
+  "Catalina Amador Campos",
+  "Tomás Barroso Gracia",
+  "Fátima Barroso Gutiérrez",
+  "Pilar Barroso Gutiérrez",
+  "Inés María Bravo Mogollón",
+  "Alfonso Callejo Carbajo",
+  "Gonzalo Callejo Carbajo",
+  "Fidela Calvarro Acosta",
+  "Gabriel Candela Maeztu",
+  "María Ángeles Carrasco Mayoral",
+  "Francisco José Corrales Corrales",
+  "María Luisa Crespo Candela",
+  "Antonio De Manuel Carrasco",
+  "Enrique Fernández Cañadas",
+  "Carmen Fernández Sánchez",
+  "Manuel Floriano Cortés",
+  "Mercedes Floriano Fernández",
+  "Santos Floriano Fernández",
+  "Antonio Galea Martín",
+  "Magdalena García Gutiérrez",
+  "Marta García Martínez",
+  "Soledad García Martínez",
+  "Carlos García Villalón",
+  "Juan Manuel García-Agúndez",
+  "Elvira Gómez Martín",
+  "Sebastián Gómez Rivera",
+  "Germán González Floriano",
+  "Pilar Guerrero Cantón",
+  "Francisco José Hernández Mogollón",
+  "Herminia Hernández Pelayo",
+  "Jesús Hernández Terrón",
+  "Plácida Jiménez Villa",
+  "Francisco León Duque",
+  "José Lucio Campos",
+  "Candelas Luengo García",
+  "José Luis Madrigal López",
+  "Magdalena Márquez Fragoso",
+  "Pelayo Mellado Jiménez",
+  "Joaquín Municio Durán",
+  "Eufemia Muñoz Carrasco",
+  "Purificación Muriel González",
+  "Purificación Muriel Rincón",
+  "Jesús Nevado Carrero",
+  "Pilar Ortega Sánchez",
+  "Elías Palomares Carrón",
+  "Santiago Paniagua Sandín",
+  "José Alfonso Pañero San Juan",
+  "María Teresa Paradés Regodón",
+  "Jesús Peloche Ortega",
+  "María Victoria Pérez Aloe Mejías",
+  "Arturo Pérez Hernández",
+  "María Isabel Pérez Hernández",
+  "Socorro Plaza Mateos",
+  "María José Polo Macías",
+  "Mercedes Preciado Lebrón",
+  "Soledad Pulido Iglesias",
+  "Santiago Ramos Pascual",
+  "Juan Ramos Salado",
+  "Rosa Rodríguez Corrales",
+  "Juan Carlos Román García",
+  "Inés María Sáez Rey",
+  "Basilio Sánchez González",
+  "Carlos Sánchez Solana",
+  "Juan José Santos Palomo",
+  "José Luis Silos Muñoz",
+  "Luis Tobajas Pizarro",
+  "Martín Valverde Merino",
+  "Emiliano Vivas Jiménez"
+];
 
+// Función para agregar todos los participantes de la lista
+function addAllParticipants() {
+  participantesLista.forEach(nombre => addRow(nombre));
+  updateTotals();
+}
+// Función para agregar un participante con ID único en Firestore
+function addRow(nombre="", asistencia="", fechas=[false,false,false,false], id=null){
+  const tbody = document.getElementById("tableBody");
+  const newRow = tbody.insertRow();
+  
+  // Si no hay ID, generamos uno único de Firestore
+  const rowId = id || db.collection("participantes").doc().id;
+  newRow.dataset.id = rowId;
+
+  newRow.innerHTML = `
+    <td>0</td>
+    <td><input type="text" value="${nombre}" oninput="guardarFila(this)"></td>
+    <td>
+      <select onchange="guardarFila(this)">
+        <option value="">--</option>
+        <option value="Sí" ${asistencia==='Sí'?'selected':''}>Sí</option>
+        <option value="No" ${asistencia==='No'?'selected':''}>No</option>
+      </select>
+    </td>
+    <td><input type="checkbox" ${fechas[0]?'checked':''} disabled onchange="guardarFila(this)"></td>
+    <td><input type="checkbox" ${fechas[1]?'checked':''} disabled onchange="guardarFila(this)"></td>
+    <td><input type="checkbox" ${fechas[2]?'checked':''} disabled onchange="guardarFila(this)"></td>
+    <td><input type="checkbox" ${fechas[3]?'checked':''} disabled onchange="guardarFila(this)"></td>
+    <td><button onclick="borrarFila(this)">🗑️</button></td>
+  `;
+  
+  // Guardar automáticamente en Firestore con ID único
+  if(nombre.trim()) {
+    db.collection("participantes").doc(rowId).set({
+      nombre, asistencia, fechas
+    }).then(()=> updateTotals())
+      .catch(err=> console.error(err));
+  }
+
+  updateTotals();
+}
+
+// Modificar unlockButtons para agregar participantes con ID único
 function unlockButtons(){
   const input = document.getElementById("clave");
   if(input.value === CLAVE){
     document.getElementById("buttons").classList.remove("hidden");
-    alert("✅ Botones desbloqueados");
+    alert("✅ Botones desbloqueados. Se cargarán los participantes predefinidos.");
     input.value = "";
+    participantesLista.forEach(nombre => addRow(nombre));
   } else {
     alert("❌ Clave incorrecta");
   }
@@ -208,4 +323,5 @@ db.collection("participantes").orderBy("nombre").onSnapshot(snapshot=>{
 
 </script>
 </body>
+
 </html>
