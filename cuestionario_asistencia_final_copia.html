@@ -17,9 +17,6 @@ tr:nth-child(even) td { background: #f9f9f9; }
 .no { background-color: #f8d7da; transition: background 0.3s; }
 input[type="text"] { width: 100%; box-sizing: border-box; padding: 4px; border-radius: 4px; border: 1px solid #ccc; }
 select { width: 70px; padding: 2px; border-radius: 4px; }
-.button-group { margin: 15px 0; }
-button { margin: 0 5px; padding: 6px 12px; cursor: pointer; border-radius: 6px; border: none; background: #007bff; color: white; font-weight: bold; transition: background 0.3s; }
-button:hover { background: #0056b3; }
 .progress-bar { height: 18px; border-radius: 10px; background: #e2e2e2; overflow: hidden; margin-top: 4px; }
 .progress-fill { height: 100%; width: 0%; background: #4caf50; text-align: center; color: white; font-size: 12px; line-height: 18px; transition: width 0.5s, background 0.5s; }
 .hidden { display: none; }
@@ -34,25 +31,25 @@ button:hover { background: #0056b3; }
 <div class="table-container">
 <table id="asistenciaTable">
   <thead>
-  <tr>
-    <th>#</th>
-    <th>Nombre</th>
-    <th>Asistencia</th>
-    <th>18-Oct-2025</th>
-    <th>Fecha 2</th>
-    <th>Fecha 3</th>
-    <th>Fecha 4</th>
-  </tr>
-  <tr class="totales">
-    <td>—</td>
-    <td>Totales</td>
-    <td id="totalAsistentes">0</td>
-    <td><div class="progress-bar"><div class="progress-fill" id="totalFecha1">0%</div></div></td>
-    <td><div class="progress-bar"><div class="progress-fill" id="totalFecha2">0%</div></div></td>
-    <td><div class="progress-bar"><div class="progress-fill" id="totalFecha3">0%</div></div></td>
-    <td><div class="progress-bar"><div class="progress-fill" id="totalFecha4">0%</div></div></td>
-  </tr>
-</thead>
+    <tr>
+      <th>#</th>
+      <th>Nombre</th>
+      <th>Asistencia</th>
+      <th>Fecha 1</th>
+      <th>Fecha 2</th>
+      <th>Fecha 3</th>
+      <th>Fecha 4</th>
+    </tr>
+    <tr class="totales">
+      <td>—</td>
+      <td>Totales</td>
+      <td id="totalAsistentes">0</td>
+      <td><div class="progress-bar"><div class="progress-fill" id="totalFecha1">0%</div></div></td>
+      <td><div class="progress-bar"><div class="progress-fill" id="totalFecha2">0%</div></div></td>
+      <td><div class="progress-bar"><div class="progress-fill" id="totalFecha3">0%</div></div></td>
+      <td><div class="progress-bar"><div class="progress-fill" id="totalFecha4">0%</div></div></td>
+    </tr>
+  </thead>
   <tbody id="tableBody"></tbody>
 </table>
 </div>
@@ -62,15 +59,9 @@ button:hover { background: #0056b3; }
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
-// Firebase configuration
+// Firebase configuration (solo con projectId para no exponer claves)
 const firebaseConfig = {
-  apiKey: "AIzaSyCqO0T91wWElxB7E9JseQuhJG7_g0KEklk",
-  authDomain: "asistencia-cou1975.firebaseapp.com",
-  projectId: "asistencia-cou1975",
-  storageBucket: "asistencia-cou1975.firebasestorage.app",
-  messagingSenderId: "640068149147",
-  appId: "1:640068149147:web:cd8b06556655f402250b3e",
-  measurementId: "G-C1V7CJW3L9"
+  projectId: "asistencia-cou1975"
 };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
@@ -160,7 +151,6 @@ function addRow(nombre="", asistencia="", fechas=[false,false,false,false], id=n
     <td><input type="checkbox" ${fechas[1]?'checked':''} disabled onchange="guardarFila(this)"></td>
     <td><input type="checkbox" ${fechas[2]?'checked':''} disabled onchange="guardarFila(this)"></td>
     <td><input type="checkbox" ${fechas[3]?'checked':''} disabled onchange="guardarFila(this)"></td>
-    <td><button onclick="borrarFila(this)">🗑️</button></td>
   `;
   newRow.dataset.id = id || nombre;
   updateTotals();
@@ -178,31 +168,33 @@ function guardarFila(el){
 
   db.collection("participantes").doc(id).set({
     nombre, asistencia, fechas
-  }, { merge: true }); // <- merge:true evita borrar los demás
+  }, { merge: true });
 
   updateTotals();
 }
 
 // Carga inicial de participantes
-function cargarParticipantes(){
-  db.collection("participantes").get().then(snapshot=>{
-    const existing = snapshot.docs.map(d=>d.data().nombre);
-    // Añade de la lista maestra si no existe en Firebase
-    participantes.forEach(nombre=>{
-      if(!existing.includes(nombre)){
-        addRow(nombre,"",[false,false,false,false], nombre);
-        db.collection("participantes").doc(nombre).set({
-          nombre, asistencia:"", fechas:[false,false,false,false]
-        }, { merge:true });
-      }
-    });
-    // Carga los datos guardados
-    snapshot.docs.forEach(doc=>{
-      const data = doc.data();
-      addRow(data.nombre, data.asistencia, data.fechas, doc.id);
-    });
-    updateTotals();
+async function cargarParticipantes(){
+  const snapshot = await db.collection("participantes").get();
+  const existing = snapshot.docs.map(d=>d.data().nombre);
+
+  // Cargar desde Firebase
+  snapshot.docs.forEach(doc=>{
+    const data = doc.data();
+    addRow(data.nombre, data.asistencia, data.fechas, doc.id);
   });
+
+  // Añadir los que falten
+  participantes.forEach(nombre=>{
+    if(!existing.includes(nombre)){
+      addRow(nombre,"",[false,false,false,false], nombre);
+      db.collection("participantes").doc(nombre).set({
+        nombre, asistencia:"", fechas:[false,false,false,false]
+      }, { merge:true });
+    }
+  });
+
+  updateTotals();
 }
 
 // Inicialización
@@ -210,6 +202,7 @@ window.onload = () => cargarParticipantes();
 </script>
 </body>
 </html>
+
 
 
 
