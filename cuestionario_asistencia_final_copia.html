@@ -27,9 +27,7 @@ select { width: 70px; padding: 2px; border-radius: 4px; }
 <h2>Colegio San Antonio de Padua. Cáceres</h2>
 <h2>COU 1975 - 50 Aniversario</h2>
 <h2>Confirmación de asistencia y fechas</h2>
-<br>
-<small>Selecciona en Asistencia "Sí/No" y, en caso afirmativo, las fechas en las que estarías disponible</small><br>
-  <small>(Si tienes dudas, no te preocupes. Los datos se pueden cambiar, añadir o quitar en cualquier momento)</small>
+
 <div class="table-container">
 <table id="asistenciaTable">
   <thead>
@@ -37,10 +35,10 @@ select { width: 70px; padding: 2px; border-radius: 4px; }
       <th>#</th>
       <th>Nombre</th>
       <th>Asistencia</th>
-      <th>18-Oct-2025</th>
-      <th>25-Oct-2025</th>
-      <th>8-Nov-2025</th>
-      <th>15-Nov-2025</th>
+      <th>Fecha 1</th>
+      <th>Fecha 2</th>
+      <th>Fecha 3</th>
+      <th>Fecha 4</th>
     </tr>
     <tr class="totales">
       <td>—</td>
@@ -68,7 +66,7 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 
-// Lista de participantes
+// Lista de participantes (orden original que se quiere respetar)
 const participantes = [
 "Luisa Fernanda Alía Sánchez","Catalina Amador Campos","Tomás Barroso Gracia","Fátima Barroso Gutiérrez",
 "Pilar Barroso Gutiérrez","Inés María Bravo Mogollón","Alfonso Callejo Carbajo","Gonzalo Callejo Carbajo",
@@ -175,20 +173,20 @@ function guardarFila(el){
   updateTotals();
 }
 
-// Carga inicial de participantes
+// Carga inicial de participantes respetando el orden de la lista
 async function cargarParticipantes(){
   const snapshot = await db.collection("participantes").get();
-  const existing = snapshot.docs.map(d=>d.data().nombre);
-
-  // Cargar desde Firebase
-  snapshot.docs.forEach(doc=>{
-    const data = doc.data();
-    addRow(data.nombre, data.asistencia, data.fechas, doc.id);
+  const dataMap = {};
+  snapshot.docs.forEach(doc => {
+    dataMap[doc.data().nombre] = { ...doc.data(), id: doc.id };
   });
 
-  // Añadir los que falten
+  // Recorremos la lista maestra en orden original
   participantes.forEach(nombre=>{
-    if(!existing.includes(nombre)){
+    if (dataMap[nombre]) {
+      const d = dataMap[nombre];
+      addRow(d.nombre, d.asistencia, d.fechas, d.id);
+    } else {
       addRow(nombre,"",[false,false,false,false], nombre);
       db.collection("participantes").doc(nombre).set({
         nombre, asistencia:"", fechas:[false,false,false,false]
@@ -204,12 +202,3 @@ window.onload = () => cargarParticipantes();
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
