@@ -55,7 +55,9 @@ select { width: 70px; padding: 2px; border-radius: 4px; }
   <tbody id="tableBody"></tbody>
 </table>
 </div>
-
+<button onclick="exportarCSV()" style="margin-top:15px; padding:8px 16px; border:none; background:#4caf50; color:white; border-radius:6px; cursor:pointer;">
+  📥 Exportar CSV
+</button>
 <!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
@@ -209,11 +211,32 @@ function cargarParticipantes(){
     updateTotals();
   });
 }
+function exportarCSV() {
+  const rows = document.querySelectorAll("#asistenciaTable tr");
+  let csv = [];
 
+  rows.forEach(row => {
+    let cols = row.querySelectorAll("td, th");
+    let rowData = [];
+    cols.forEach((col, i) => {
+      let text = col.innerText.replace(/\n/g, " ").trim();
+      rowData.push(`"${text}"`);
+    });
+    csv.push(rowData.join(","));
+  });
+
+  // Crear archivo descargable
+  const blob = new Blob([csv.join("\n")], { type: "text/csv;charset=utf-8;" });
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(blob);
+  link.download = "asistencia_cou1975.csv";
+  link.click();
+}
 window.onload = () => cargarParticipantes();
 </script>
 </body>
 
 </html>
+
 
 
