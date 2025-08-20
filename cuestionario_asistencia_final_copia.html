@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cuestionario de Asistencia Interactivo</title>
+<style>
+body { font-family: Arial, sans-serif; background: #f0f4f8; padding: 20px; text-align: center; }
+h2 { color: #333; margin-bottom: 10px; }
+.table-container { max-width: 1000px; margin: 20px auto; overflow: auto; background: #fff; box-shadow: 0 6px 20px rgba(0,0,0,0.1); border-radius: 12px; padding: 15px; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+th { background: #e2e2e2; font-weight: bold; position: sticky; top: 0; z-index: 2; }
+.totales { font-weight: bold; background: #d0ebff; position: sticky; top: 40px; z-index: 1; }
+tr:nth-child(even) td { background: #f9f9f9; }
+.si { background-color: #d4edda; transition: background 0.3s; }
+.no { background-color: #f8d7da; transition: background 0.3s; }
+input[type="text"] { width: 100%; box-sizing: border-box; padding: 4px; border-radius: 4px; border: 1px solid #ccc; }
+select { width: 70px; padding: 2px; border-radius: 4px; }
+.button-group { margin: 15px 0; }
+button { margin: 0 5px; padding: 6px 12px; cursor: pointer; border-radius: 6px; border: none; background: #007bff; color: white; font-weight: bold; transition: background 0.3s; }
+button:hover { background: #0056b3; }
+.progress-bar { height: 18px; border-radius: 10px; background: #e2e2e2; overflow: hidden; margin-top: 4px; }
+.progress-fill { height: 100%; width: 0%; background: #4caf50; text-align: center; color: white; font-size: 12px; line-height: 18px; transition: width 0.5s, background 0.5s; }
+.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<h2>Colegio San Antonio de Padua. Cáceres</h2>
+<h2>COU 1975 - 50 Aniversario</h2>
+<h2>Confirmación de asistencia y fechas</h2>
+
+<div class="button-group hidden" id="buttons">
+  <button onclick="addRow()">➕ Agregar participante</button>
+  <button onclick="exportCSV()">💾 Exportar CSV</button>
+</div>
+
+<div>
+  <input type="password" id="clave" placeholder="Ingrese la clave para desbloquear" onkeypress="if(event.key==='Enter'){unlockButtons();}">
+  <button onclick="unlockButtons()">🔓 Desbloquear</button>
+</div>
+
+<div class="table-container">
+<table id="asistenciaTable">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Nombre</th>
+      <th>Asistencia</th>
+      <th>Fecha 1</th>
+      <th>Fecha 2</th>
+      <th>Fecha 3</th>
+      <th>Fecha 4</th>
+      <th>Acciones</th>
+    </tr>
+    <tr class="totales">
+      <td>—</td>
+      <td>Totales</td>
+      <td id="totalAsistentes">0</td>
+      <td><div class="progress-bar"><div class="progress-fill" id="totalFecha1">0%</div></div></td>
+      <td><div class="progress-bar"><div class="progress-fill" id="totalFecha2">0%</div></div></td>
+      <td><div class="progress-bar"><div class="progress-fill" id="totalFecha3">0%</div></div></td>
+      <td><div class="progress-bar"><div class="progress-fill" id="totalFecha4">0%</div></div></td>
+      <td>—</td>
+    </tr>
+  </thead>
+  <tbody id="tableBody"></tbody>
+</table>
+</div>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyCqO0T91wWElxB7E9JseQuhJG7_g0KEklk",
+  authDomain: "asistencia-cou1975.firebaseapp.com",
+  projectId: "asistencia-cou1975",
+  storageBucket: "asistencia-cou1975.firebasestorage.app",
+  messagingSenderId: "640068149147",
+  appId: "1:640068149147:web:cd8b06556655f402250b3e",
+  measurementId: "G-C1V7CJW3L9"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ===== Variables y Funciones =====
+const CLAVE = "1234";
+
+function unlockButtons(){
+  const input = document.getElementById("clave");
+  if(input.value === CLAVE){
+    document.getElementById("buttons").classList.remove("hidden");
+    alert("✅ Botones desbloqueados");
+    input.value = "";
+  } else {
+    alert("❌ Clave incorrecta");
+  }
+}
+
+// Actualiza totales y colores de progreso
+function updateTotals() {
+  const tbody = document.getElementById("tableBody");
+  const rows = tbody.rows;
+  let totalAsistentes = 0;
+  let totalFechas = [0,0,0,0];
+
+  for (let i = 0; i < rows.length; i++) {
+    const row = rows[i];
+    const select = row.cells[2].querySelector("select");
+    const checkboxes = Array.from(row.querySelectorAll('input[type="checkbox"]'));
+    const nombreInput = row.cells[1].querySelector('input[type="text"]');
+
+    row.style.opacity = nombreInput.value.trim() ? 1 : 0.6;
+
+    if (select.value === "Sí") {
+      checkboxes.forEach(cb => cb.disabled = false);
+      row.classList.add('si'); row.classList.remove('no');
+    } else if (select.value === "No") {
+      checkboxes.forEach(cb => { cb.checked = false; cb.disabled = true; });
+      row.classList.add('no'); row.classList.remove('si');
+    } else {
+      checkboxes.forEach(cb => { cb.checked = false; cb.disabled = true; });
+      row.classList.remove('si'); row.classList.remove('no');
+    }
+
+    if (select.value === "Sí") {
+      totalAsistentes++;
+      checkboxes.forEach((cb, idx) => { if(cb.checked) totalFechas[idx]++; });
+    }
+
+    row.cells[0].textContent = i+1;
+  }
+
+  document.getElementById("totalAsistentes").textContent = totalAsistentes;
+  for (let j=0;j<4;j++){
+    let pct = totalAsistentes ? Math.round(totalFechas[j]/totalAsistentes*100) : 0;
+    let fill = document.getElementById("totalFecha"+(j+1));
+    fill.style.width = pct + "%";
+    fill.textContent = pct + "%";
+    fill.style.background = pct < 40 ? "#f44336" : pct < 70 ? "#ff9800" : "#4caf50";
+  }
+}
+
+// Añade un participante
+function addRow(nombre="", asistencia="", fechas=[false,false,false,false], id=null){
+  const tbody = document.getElementById("tableBody");
+  const newRow = tbody.insertRow();
+  newRow.innerHTML = `
+    <td>0</td>
+    <td><input type="text" value="${nombre}" oninput="guardarFila(this)"></td>
+    <td>
+      <select onchange="guardarFila(this)">
+        <option value="">--</option>
+        <option value="Sí" ${asistencia==='Sí'?'selected':''}>Sí</option>
+        <option value="No" ${asistencia==='No'?'selected':''}>No</option>
+      </select>
+    </td>
+    <td><input type="checkbox" ${fechas[0]?'checked':''} disabled onchange="guardarFila(this)"></td>
+    <td><input type="checkbox" ${fechas[1]?'checked':''} disabled onchange="guardarFila(this)"></td>
+    <td><input type="checkbox" ${fechas[2]?'checked':''} disabled onchange="guardarFila(this)"></td>
+    <td><input type="checkbox" ${fechas[3]?'checked':''} disabled onchange="guardarFila(this)"></td>
+    <td><button onclick="borrarFila(this)">🗑️</button></td>
+  `;
+  newRow.dataset.id = id || ""; // guardar id de Firestore
+  updateTotals();
+}
+
+// Guardar cambios de una fila en Firebase
+function guardarFila(el){
+  const row = el.closest("tr");
+  const nombre = row.cells[1].querySelector("input").value;
+  if(!nombre.trim()) return;
+
+  const asistencia = row.cells[2].querySelector("select").value;
+  const fechas = Array.from(row.querySelectorAll('input[type="checkbox"]')).map(cb=>cb.checked);
+
+  // Guardar en Firestore
+  const id = row.dataset.id || nombre; // si no hay id, usar nombre
+  row.dataset.id = id;
+  db.collection("participantes").doc(id).set({
+    nombre, asistencia, fechas
+  }).then(()=> updateTotals())
+    .catch(err=> console.error(err));
+}
+
+// Borrar fila y eliminar de Firebase
+function borrarFila(btn){
+  const row = btn.closest("tr");
+  const id = row.dataset.id;
+  if(id) db.collection("participantes").doc(id).delete().catch(console.error);
+  row.remove();
+  updateTotals();
+}
+
+// Cargar datos desde Firebase en tiempo real
+db.collection("participantes").orderBy("nombre").onSnapshot(snapshot=>{
+  const tbody = document.getElementById("tableBody");
+  tbody.innerHTML = "";
+  snapshot.forEach(doc=>{
+    const data = doc.data();
+    addRow(data.nombre, data.asistencia, data.fechas, doc.id);
+  });
+});
+
+</script>
+</body>
+</html>
