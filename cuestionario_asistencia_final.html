@@ -201,10 +201,16 @@ function exportarCSV() {
     let rowData = [];
 
     cols.forEach((col, idx) => {
+      // Columna de Asistencia
       if(idx === 2 && col.querySelector("select")) {
-        // Obtener el valor seleccionado del select de Asistencia
         rowData.push(`"${col.querySelector("select").value}"`);
-      } else {
+      } 
+      // Columnas de fechas (checkboxes)
+      else if(idx >= 3 && idx <= 6 && col.querySelector("input[type='checkbox']")) {
+        rowData.push(`"${col.querySelector("input").checked ? "Sí" : "No"}"`);
+      } 
+      // Otras columnas
+      else {
         rowData.push(`"${col.innerText.replace(/\n/g," ").trim()}"`);
       }
     });
@@ -223,4 +229,5 @@ cargarParticipantes();
 </script>
 </body>
 </html>
+
 
