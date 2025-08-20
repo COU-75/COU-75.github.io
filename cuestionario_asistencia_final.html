@@ -182,23 +182,32 @@ function guardarFila(el){
 }
 
 // Carga inicial
-async function cargarParticipantes(){
-  const snapshot = await db.collection("participantes").get();
-  const dataMap = {};
-  snapshot.docs.forEach(doc => { dataMap[doc.data().nombre] = { ...doc.data(), id: doc.id }; });
+function cargarParticipantes(){
+  db.collection("participantes").onSnapshot(snapshot => {
+    const dataMap = {};
+    snapshot.docs.forEach(doc => { 
+      dataMap[doc.data().nombre] = { ...doc.data(), id: doc.id }; 
+    });
 
-  participantes.forEach(nombre=>{
-    if (dataMap[nombre]) {
-      const d = dataMap[nombre];
-      addRow(d.nombre, d.asistencia, d.fechas, d.id);
-    } else {
-      addRow(nombre,"",[false,false,false,false], nombre);
-      db.collection("participantes").doc(nombre).set({
-        nombre, asistencia:"", fechas:[false,false,false,false]
-      }, { merge:true });
-    }
+    // Vaciar la tabla antes de volver a pintar
+    const tbody = document.getElementById("tableBody");
+    tbody.innerHTML = "";
+
+    // Volver a generar filas actualizadas
+    participantes.forEach(nombre=>{
+      if (dataMap[nombre]) {
+        const d = dataMap[nombre];
+        addRow(d.nombre, d.asistencia, d.fechas, d.id);
+      } else {
+        addRow(nombre,"",[false,false,false,false], nombre);
+        db.collection("participantes").doc(nombre).set({
+          nombre, asistencia:"", fechas:[false,false,false,false]
+        }, { merge:true });
+      }
+    });
+
+    updateTotals();
   });
-  updateTotals();
 }
 
 window.onload = () => cargarParticipantes();
@@ -206,4 +215,5 @@ window.onload = () => cargarParticipantes();
 </body>
 
 </html>
+
 
