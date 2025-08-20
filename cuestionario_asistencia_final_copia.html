@@ -89,6 +89,7 @@ const db = firebase.firestore();
 
 // ===== Variables y Funciones =====
 
+// Lista de participantes predefinidos
 const participantesLista = [
   "Luisa Fernanda Alía Sánchez",
   "Catalina Amador Campos",
@@ -103,19 +104,19 @@ const participantesLista = [
   "María Ángeles Carrasco Mayoral",
   "Francisco José Corrales Corrales",
   "María Luisa Crespo Candela",
-  "Antonio De Manuel Carrasco",
+  "Antonio  De Manuel Carrasco",
   "Enrique Fernández Cañadas",
   "Carmen Fernández Sánchez",
   "Manuel Floriano Cortés",
   "Mercedes Floriano Fernández",
   "Santos Floriano Fernández",
-  "Antonio Galea Martín",
+  "Antonio  Galea Martín",
   "Magdalena García Gutiérrez",
-  "Marta García Martínez",
+  "Marta  García Martínez",
   "Soledad García Martínez",
   "Carlos García Villalón",
-  "Juan Manuel García-Agúndez",
-  "Elvira Gómez Martín",
+  "Juan Manuel  García-Agúndez",
+  "Elvira  Gómez Martín",
   "Sebastián Gómez Rivera",
   "Germán González Floriano",
   "Pilar Guerrero Cantón",
@@ -125,8 +126,8 @@ const participantesLista = [
   "Plácida Jiménez Villa",
   "Francisco León Duque",
   "José Lucio Campos",
-  "Candelas Luengo García",
-  "José Luis Madrigal López",
+  "Candelas  Luengo García",
+  "José Luis  Madrigal López",
   "Magdalena Márquez Fragoso",
   "Pelayo Mellado Jiménez",
   "Joaquín Municio Durán",
@@ -138,28 +139,43 @@ const participantesLista = [
   "Elías Palomares Carrón",
   "Santiago Paniagua Sandín",
   "José Alfonso Pañero San Juan",
-  "María Teresa Paradés Regodón",
+  "María Teresa  Paradés Regodón",
   "Jesús Peloche Ortega",
   "María Victoria Pérez Aloe Mejías",
   "Arturo Pérez Hernández",
   "María Isabel Pérez Hernández",
-  "Socorro Plaza Mateos",
+  "Socorro  Plaza Mateos",
   "María José Polo Macías",
   "Mercedes Preciado Lebrón",
   "Soledad Pulido Iglesias",
-  "Santiago Ramos Pascual",
+  "Santiago  Ramos Pascual",
   "Juan Ramos Salado",
   "Rosa Rodríguez Corrales",
   "Juan Carlos Román García",
   "Inés María Sáez Rey",
   "Basilio Sánchez González",
-  "Carlos Sánchez Solana",
+  "Carlos  Sánchez Solana",
   "Juan José Santos Palomo",
-  "José Luis Silos Muñoz",
+  "José Luis  Silos Muñoz",
   "Luis Tobajas Pizarro",
   "Martín Valverde Merino",
   "Emiliano Vivas Jiménez"
 ];
+
+// Función para cargar participantes al iniciar
+async function cargarParticipantes() {
+  const snapshot = await db.collection("participantes").get();
+  const existentes = snapshot.docs.map(doc => doc.data().nombre);
+
+  participantesLista.forEach(nombre => {
+    if(!existentes.includes(nombre)) {
+      addRow(nombre); // crea y guarda automáticamente en Firestore
+    }
+  });
+}
+
+// Llamar al cargar la página
+window.addEventListener("load", cargarParticipantes);
 
 // Función para agregar todos los participantes de la lista
 function addAllParticipants() {
@@ -325,4 +341,5 @@ db.collection("participantes").orderBy("nombre").onSnapshot(snapshot=>{
 </body>
 
 </html>
+
 
