@@ -42,7 +42,6 @@ button:hover { background:#45a049; }
       <th>4-Oct-2025</th>
       <th>11-Oct-2025</th>
       <th>25-Oct-2025</th>
-      <th>08-Nov-2025</th>
     </tr>
     <tr class="totales">
       <td>—</td>
@@ -51,7 +50,6 @@ button:hover { background:#45a049; }
       <td><div class="progress-bar"><div class="progress-fill" id="totalFecha1">0%</div></div></td>
       <td><div class="progress-bar"><div class="progress-fill" id="totalFecha2">0%</div></div></td>
       <td><div class="progress-bar"><div class="progress-fill" id="totalFecha3">0%</div></div></td>
-      <td><div class="progress-bar"><div class="progress-fill" id="totalFecha4">0%</div></div></td>
     </tr>
   </thead>
   <tbody id="tableBody"></tbody>
@@ -96,7 +94,7 @@ function updateTotals() {
   const tbody = document.getElementById("tableBody");
   const rows = tbody.rows;
   let totalAsistentes = 0;
-  let totalFechas = [0,0,0,0];
+  let totalFechas = [0,0,0];
 
   for (let i = 0; i < rows.length; i++) {
     const row = rows[i];
@@ -123,7 +121,7 @@ function updateTotals() {
   }
 
   document.getElementById("totalAsistentes").textContent = totalAsistentes;
-  for (let j=0;j<4;j++){
+  for (let j=0;j<3;j++){
     let pct = totalAsistentes ? Math.round(totalFechas[j]/totalAsistentes*100) : 0;
     let fill = document.getElementById("totalFecha"+(j+1));
     fill.style.width = pct + "%";
@@ -132,7 +130,7 @@ function updateTotals() {
   }
 }
 
-function addRow(nombre="", asistencia="", fechas=[false,false,false,false], id=null){
+function addRow(nombre="", asistencia="", fechas=[false,false,false], id=null){
   const tbody = document.getElementById("tableBody");
   const newRow = tbody.insertRow();
   newRow.innerHTML = `
@@ -148,7 +146,6 @@ function addRow(nombre="", asistencia="", fechas=[false,false,false,false], id=n
     <td><input type="checkbox" ${fechas[0]?'checked':''} disabled onchange="guardarFila(this)"></td>
     <td><input type="checkbox" ${fechas[1]?'checked':''} disabled onchange="guardarFila(this)"></td>
     <td><input type="checkbox" ${fechas[2]?'checked':''} disabled onchange="guardarFila(this)"></td>
-    <td><input type="checkbox" ${fechas[3]?'checked':''} disabled onchange="guardarFila(this)"></td>
   `;
   newRow.dataset.id = id || nombre;
   updateTotals();
@@ -205,7 +202,7 @@ function exportarCSV() {
         rowData.push(`"${col.querySelector("select").value}"`);
       } 
       // Columnas de fechas (checkboxes)
-      else if(idx >= 3 && idx <= 6 && col.querySelector("input[type='checkbox']")) {
+      else if(idx >= 3 && idx <= 5 && col.querySelector("input[type='checkbox']")) {
         rowData.push(`"${col.querySelector("input").checked ? "Sí" : "No"}"`);
       } 
       // Otras columnas
@@ -228,8 +225,3 @@ cargarParticipantes();
 </script>
 </body>
 </html>
-
-
-
-
-
