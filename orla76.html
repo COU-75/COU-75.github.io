@@ -269,7 +269,7 @@ body{
     <div class="toolbar">
         <button id="toggleFotos">Intercambiar fotos</button>
     </div>
-	
+
 	 <div class="decor-top">
 
         <div class="escudo">
@@ -329,7 +329,7 @@ const data = [
     "foto_bn": "fotos/Basilio_bn.jpg",
     "foto_color": "fotos/Basilio_color.jpg"
   }
-  
+
 ];
 
 /* =========================
@@ -350,19 +350,15 @@ for(let i=0;i<data.length;i+=5){
 
         div.innerHTML = `
         <div class="foto-wrapper">
-
             <img class="foto-principal abrir"
                  src="${alumno.foto_bn}"
                  data-bn="${alumno.foto_bn}"
                  data-color="${alumno.foto_color}">
-
             <img class="foto-secundaria abrir"
                  src="${alumno.foto_color}"
                  data-bn="${alumno.foto_bn}"
                  data-color="${alumno.foto_color}">
-
         </div>
-
         <div class="nombre">${alumno.nombre}</div>
         <div class="residencia">${alumno.residencia}</div>
         `;
