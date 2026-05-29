@@ -166,7 +166,7 @@ body{
 }
 
 .alumno{
-    width:210px;
+    width:clamp(120px, 18vw, 210px);
     text-align:center;
 }
 
@@ -176,8 +176,16 @@ body{
 
 .foto-wrapper{
     position:relative;
-    width:150px;
-    height:200px;
+
+    width:12vw;
+    height:16vw;
+
+    max-width:150px;
+    max-height:200px;
+
+    min-width:90px;
+    min-height:120px;
+
     margin:auto;
 }
 
@@ -198,22 +206,13 @@ body{
 /* FOTO SECUNDARIA */
 .foto-secundaria{
     position:absolute;
-    bottom:-15px;
-    right:-40px;
 
-    width:60px;
-    height:80px;
+    bottom:-8%;
+    right:-22%;
 
-    border-radius:50%;
-    object-fit:cover;
-
-    border:5px solid white;
-
-    box-shadow:0 5px 14px rgba(0,0,0,0.28);
-
-    cursor:pointer;
-}
-
+    width:40%;
+    height:40%;
+	}
 /* =========================
    TEXTO
 ========================= */
@@ -257,6 +256,45 @@ body{
 
     box-shadow:0 0 35px rgba(0,0,0,0.45);
     cursor:pointer;
+}
+
+	@media (max-width: 768px){
+
+    body{
+        padding:15px;
+    }
+
+    .marco-orla{
+        padding:40px 15px;
+    }
+
+    .fila{
+        gap:20px;
+    }
+
+    .titulo h1{
+        font-size:28px;
+    }
+
+    .titulo p{
+        font-size:18px;
+    }
+
+    .nombre{
+        font-size:13px;
+    }
+
+    .residencia{
+        font-size:11px;
+    }
+
+    .decor-top{
+        gap:20px;
+    }
+
+    .escudo img{
+        width:70px;
+    }
 }
 
 </style>
