@@ -148,12 +148,11 @@ body{
    ORLA
 ========================= */
 
-.fila{
+#orla{
     display:grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
     gap:clamp(14px, 2vw, 28px);
     justify-items:center;
-    margin-bottom:45px;
 }
 
 .alumno{
@@ -161,6 +160,7 @@ body{
     max-width:150px;
     text-align:center;
 }
+
 
 /* =========================
    FOTOS RESPONSIVE
@@ -412,7 +412,7 @@ const data = [
     foto_color:"fotos/Basilio_color.jpg"
 },
 
-	{
+{
     nombre:"Joaquín Municio Durán",
     residencia:"Cáceres",
     foto_bn:"fotos/Quini_bn.jpg",
@@ -448,49 +448,41 @@ const data = [
 
 const contenedor = document.getElementById("orla");
 
-for(let i=0;i<data.length;i+=5){
+data.forEach(alumno => {
 
-    const fila = document.createElement("div");
-    fila.className = "fila";
+    const div = document.createElement("div");
 
-    data.slice(i,i+5).forEach(alumno=>{
+    div.className = "alumno";
 
-        const div = document.createElement("div");
+    div.innerHTML = `
 
-        div.className = "alumno";
+    <div class="foto-wrapper">
 
-        div.innerHTML = `
+        <img class="foto-principal abrir"
+             src="${alumno.foto_bn}"
+             data-bn="${alumno.foto_bn}"
+             data-color="${alumno.foto_color}">
 
-        <div class="foto-wrapper">
+        <img class="foto-secundaria abrir"
+             src="${alumno.foto_color}"
+             data-bn="${alumno.foto_bn}"
+             data-color="${alumno.foto_color}">
 
-            <img class="foto-principal abrir"
-                 src="${alumno.foto_bn}"
-                 data-bn="${alumno.foto_bn}"
-                 data-color="${alumno.foto_color}">
+    </div>
 
-            <img class="foto-secundaria abrir"
-                 src="${alumno.foto_color}"
-                 data-bn="${alumno.foto_bn}"
-                 data-color="${alumno.foto_color}">
+    <div class="nombre">
+        ${alumno.nombre}
+    </div>
 
-        </div>
+    <div class="residencia">
+        ${alumno.residencia}
+    </div>
 
-        <div class="nombre">
-            ${alumno.nombre}
-        </div>
+    `;
 
-        <div class="residencia">
-            ${alumno.residencia}
-        </div>
+    contenedor.appendChild(div);
 
-        `;
-
-        fila.appendChild(div);
-
-    });
-
-    contenedor.appendChild(fila);
-}
+});
 
 /* =========================
    POPUP
