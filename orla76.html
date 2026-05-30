@@ -47,7 +47,7 @@ body{
 
 .marco-orla::before,
 .marco-orla::after{
-    content:"❦ ❧ ❦";
+    content:"";
 
     position:absolute;
 
@@ -145,6 +145,36 @@ body{
 }
 
 /* =========================
+   CENEFAS DECORATIVAS
+========================= */
+
+.cenefa-titulo{
+    display:block;
+    margin:15px auto;
+
+    width:min(450px, 80%);
+    height:auto;
+
+    opacity:.95;
+}
+
+@media (max-width:768px){
+
+    .cenefa-titulo{
+        width:min(320px, 85%);
+    }
+}
+
+.cenefa-titulo{
+    filter:
+        sepia(100%)
+        saturate(200%)
+        hue-rotate(5deg);
+
+    opacity:.85;
+}
+
+/* =========================
    ORLA
 ========================= */
 
@@ -223,14 +253,14 @@ body{
 .nombre{
     margin-top:15px;
 
-    font-size:14px;
+    font-size:11px;
     font-weight:bold;
 
     color:#5f3d1c;
 }
 
 .residencia{
-    font-size:13px;
+    font-size:11px;
     font-style:italic;
 
     color:#86684a;
@@ -355,9 +385,24 @@ body{
     </div>
 
     <div class="titulo">
-        <h1>Colegio .....</h1>
-        <p>50 Aniversario C.O.U. (1976-2026)</p>
-    </div>
+
+    <img
+        src="fotos/cenefa.png"
+        class="cenefa-titulo"
+        alt="Cenefa decorativa">
+
+    <h1>Colegio .....</h1>
+
+    <p>
+        50 Aniversario C.O.U. (1976-2026)
+    </p>
+
+    <img
+        src="fotos/cenefa.png"
+        class="cenefa-titulo"
+        alt="Cenefa decorativa">
+
+</div>
 
     <div id="orla"></div>
 
